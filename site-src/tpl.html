@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transaction Fraud Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0E1A24;--panel:#142634;--panel2:#193146;--line:#25425A;--ink:#EAF2F7;--mut:#93A9B8;--teal:#2EC4B6;--amber:#FFB703;--red:#FF5D5D;--green:#4ADE80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,system-ui,Segoe UI,sans-serif;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+header{padding:26px 0 8px}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.3px}
+h1 span{color:var(--teal)}
+.sub{color:var(--mut);margin:6px 0 0;max-width:720px}
+#lang{font:inherit;font-weight:700;font-size:14px;background:var(--teal);color:#06222B;border:0;border-radius:999px;padding:7px 18px;cursor:pointer;white-space:nowrap}
+.badge{display:inline-block;margin-top:12px;background:#3a2f0d;color:var(--amber);border:1px solid #6b5412;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
+section{margin:26px 0}
+h2{font-size:20px;margin:0 0 4px}
+.lead{color:var(--mut);margin:0 0 14px;font-size:14.5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+/* pipeline */
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:stretch}
+.node{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;font-size:13px;position:relative}
+.node b{display:block;font-size:13.5px;margin-bottom:3px}
+.node small{display:block;color:var(--mut);font-size:11.5px;line-height:1.35}
+.chip{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px}
+.done{background:#12382b;color:var(--green)}.plan{background:#3a2f0d;color:var(--amber)}
+.node:not(:last-child)::after{content:"→";position:absolute;inset-inline-end:-11px;top:38%;color:var(--teal);font-weight:800;z-index:2}
+[dir=rtl] .node:not(:last-child)::after{content:"←"}
+.str{margin:0;padding-inline-start:20px;font-size:14px}.str li{margin:5px 0}.str b{color:var(--teal)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}.tools span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 13px;font-size:13px;font-weight:600;direction:ltr}
+.legend{margin-top:10px;font-size:13px;color:var(--mut)}
+/* replay */
+.howbox{margin-bottom:12px;border-color:#2c6a66}.howbox b{color:var(--teal)}.howbox ol{margin:6px 0 0;padding-inline-start:22px;font-size:14px}.howbox li{margin:4px 0}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{font:inherit;font-weight:700;font-size:14px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 14px;cursor:pointer}
+.btn.on{background:var(--teal);color:#06222B;border-color:var(--teal)}
+.clock{margin-inline-start:auto;font-variant-numeric:tabular-nums;font-weight:700;color:var(--teal);font-size:18px}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--panel2);border-radius:10px;padding:8px 10px}
+.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--mut)}
+.feed{height:330px;overflow:hidden;font-size:13px}
+.tx{display:grid;grid-template-columns:54px 1fr auto;gap:8px;padding:5px 6px;border-bottom:1px solid #1f384c;align-items:center}
+.tx .t{color:var(--mut);font-variant-numeric:tabular-nums}
+.tx .a{font-variant-numeric:tabular-nums;font-weight:600}
+.tx.alert{background:#3b1c22;border-inline-start:3px solid var(--red)}
+.alerts{height:200px;overflow:hidden;margin-top:12px;font-size:13px}
+.al{padding:6px 8px;border-radius:8px;background:#2c1a22;margin-bottom:6px;border-inline-start:3px solid var(--red)}
+.al b{color:var(--amber)}
+.al .v{float:inline-end;font-weight:700;font-size:12px}
+.ok{color:var(--green)}.bad{color:var(--red)}
+canvas{width:100%;height:250px;display:block;background:#0b1620;border-radius:10px}
+.map-h{font-weight:700;margin:0 0 6px;font-size:14px}
+/* results */
+.res{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bar{display:grid;grid-template-columns:130px 1fr 54px;gap:8px;align-items:center;margin:7px 0;font-size:13.5px}
+.track{height:12px;background:#0b1620;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--teal);border-radius:99px}
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 6px;border-bottom:1px solid #1f384c;text-align:start}
+th{color:var(--mut);font-weight:600}
+.rules{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.rule{background:var(--panel2);border-radius:12px;padding:12px;font-size:13.5px}
+.rule b{color:var(--teal);display:block;margin-bottom:4px}
+.rule code{display:block;margin-top:6px;color:var(--amber);font-size:12px;direction:ltr;text-align:left}
+ul.lim{margin:0;padding-inline-start:20px;font-size:14px}
+ul.lim li{margin:5px 0}
+footer{color:var(--mut);font-size:12.5px;padding:18px 0 40px;border-top:1px solid var(--line);margin-top:30px}
+@media(max-width:860px){.flow{grid-template-columns:repeat(2,1fr)}.node::after{display:none}.grid,.res{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.rules{grid-template-columns:1fr 1fr}.big{grid-template-columns:1fr 1fr 1fr}h1{font-size:24px}}
+@media(max-width:520px){.rules{grid-template-columns:1fr}.bar{grid-template-columns:96px 1fr 46px}.tx{grid-template-columns:46px 1fr auto}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+ <div class="top"><div>
+  <h1 data-i="h1"></h1>
+  <p class="sub" data-i="sub"></p>
+  <span class="badge" data-i="badge"></span>
+ </div><button id="lang" type="button"></button></div>
+</div></header>
+<main class="wrap">
+
+<section>
+ <h2 data-i="pT"></h2><p class="lead" data-i="pS"></p>
+ <div class="card" style="margin-bottom:12px"><p class="map-h" data-i="sT"></p><ul class="str" id="str"></ul><p class="map-h" style="margin-top:12px" data-i="tl"></p><div class="tools" id="tools"></div></div>
+ <div class="card"><div class="flow" id="flow"></div><div class="legend" data-i="pLeg"></div></div>
+</section>
+
+<section>
+ <h2 data-i="rT"></h2><p class="lead" data-i="rS"></p>
+ <div class="card">
+  <div class="ctrl">
+   <button class="btn on" id="play"></button><button class="btn" id="reset"></button>
+   <span data-i="spd" style="color:var(--mut);font-size:13px"></span>
+   <button class="btn" data-s="600">10×</button><button class="btn on" data-s="1800">30×</button><button class="btn" data-s="5400">90×</button>
+   <button class="btn" id="truth"></button>
+   <span class="clock" id="clock">00:00</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+   <div><p class="map-h" data-i="feedT"></p><div class="feed card" style="padding:6px" id="feed"></div></div>
+   <div>
+    <p class="map-h" data-i="mapT"></p><canvas id="map"></canvas>
+    <p class="map-h" style="margin-top:12px" data-i="alT"></p><div class="alerts card" style="padding:8px" id="alerts"></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section>
+ <h2 data-i="eT"></h2><p class="lead" data-i="eS"></p>
+ <div class="res">
+  <div class="card"><div class="big" id="big"></div><div id="evbars"></div></div>
+  <div class="card"><p class="map-h" data-i="tblT"></p><table id="rtable"></table><p class="lead" style="margin-top:10px" id="tune"></p></div>
+ </div>
+</section>
+
+<section>
+ <h2 data-i="ruT"></h2><p class="lead" data-i="ruS"></p>
+ <div class="rules" id="rules"></div>
+</section>
+
+<section>
+ <h2 data-i="lmT"></h2>
+ <div class="card"><ul class="lim" id="lim"></ul></div>
+</section>
+<footer id="foot"></footer>
+</main>
+<script>
+const DATA=__DATA__;
+const L={en:{
+h1:'Transaction <span>Fraud Radar</span>',sub:'A data engineering project on Databricks that detects fraud in card transactions across Saudi cities, using four explainable rules and measuring its own accuracy.',
+badge:'Simulated data only',
+pT:'The pipeline',sT:'Key strengths',tl:'Tools used',sl:['<b>Incremental processing:</b> only new data is processed, and re-running never duplicates results.','<b>Built-in data quality:</b> every transaction is validated, duplicates are removed, and checks are logged.','<b>Explainable alerts:</b> every alert states its reason, with the actual figures.','<b>Measured results:</b> the rules were tested on fraud cases labelled in advance (50 of 51 fraud events detected).'],pS:'Stages implemented so far and stages still planned.',
+pLeg:'Technical layers: Bronze (ingestion), Silver (cleaning), Gold (alerts). The pipeline runs on Databricks Free Edition, which uses serverless compute: each run processes everything that arrived and then stops (availableNow micro-batches), not an always-on stream.',
+n:[['Data source','Python','Simulated card transactions in Saudi cities, with fraud cases labelled in advance to measure accuracy','done'],['Ingestion','Auto Loader','Reads only the new files','done'],['Cleaning','Spark + Delta','Validates transactions, removes duplicates, logs quality checks','done'],['Detection','Spark + Delta','Four explainable rules on every batch','done'],['Display','HTML','This site, reading the detection results','done'],['Next steps','Kafka + Airflow','Real event stream and scheduling','plan']],
+st:{done:'Built',plan:'Planned'},
+rT:'Interactive transaction replay',rS:'An interactive replay of the simulated transactions of 5 October, showing how each transaction is checked as soon as it arrives.',
+play:'Pause',playb:'Play',reset:'Restart',spd:'Speed:',truth:'Reveal true labels',truth2:'Hide true labels',truthTip:'Shows whether each alert was real fraud or a false alarm, using the labels set in advance.',
+k1:'Processed',k2:'Alerts',k3:'Flagged (SAR)',k4:'Real fraud caught',k4n:'Labels hidden',
+feedT:'Transaction stream',mapT:'Where transactions happen',alT:'Alerts and why',
+am:'amount',real:'Real fraud',fa:'False alarm',
+why:{
+ high_amount:d=>d.usual==null?`${NF(d.amount)} SAR on a card with little history`:`${NF(d.amount)} SAR; the card usually spends about ${NF(d.usual)} SAR`,
+ velocity:d=>`${d.count} transactions within ${d.seconds} seconds`,
+ impossible_travel:d=>`Locations ${NF(d.km)} km apart, ${d.minutes} min between transactions`,
+ card_testing:d=>d.small_count?`${d.small_count} very small transactions in a row`:`large transaction (${NF(d.followed_by_big)} SAR) right after small test transactions`},
+rule:{high_amount:'Large amount',velocity:'Rapid transactions',impossible_travel:'Location change',card_testing:'Card testing'},
+pat:{high_amount:'Large amount',velocity:'Rapid transactions',impossible_travel:'Location change',card_testing:'Card testing'},
+eT:'Performance results',eS:'Results for the full week: 25,918 transactions, including 51 fraud events labelled in advance. The labels are used for measurement only.',
+b1:'fraud events caught',b2:'alert precision',b3:'false alarms',
+evl:'Fraud events caught (at least one alert)',
+tblT:'Alerts by rule',cr:'Rule',cf:'Real fraud',cx:'False alarm',
+tune:'Tuning example: with the large-amount threshold at 1,500 SAR, there were 335 false alarms (30% precision). At 3,000 SAR, there were 78 (64% precision), with the same fraud events caught.',
+ruT:'The four rules',ruS:'Each rule is simple, explainable, and evaluates one transaction at a time, as a streaming job would.',
+ru:[['Large amount','Amount above 8 times the card\'s usual spending, and at least 3,000 SAR.','amount > 8 × median'],['Rapid transactions','5 or more transactions on one card within 2 minutes.','count(120s) ≥ 5'],['Location change','Two transactions on the same card in locations more than 300 km apart, too close in time to travel between.','km / hours > 900'],['Card testing','Three or more very small transactions (≤ 10 SAR) within 5 minutes, or a large one right after.','small ≥ 3 → big']],
+lmT:'Project limitations',
+lm:['The pipeline runs in micro-batches (availableNow) on Databricks Free Edition. It is not an always-on stream.','All data is simulated. I inserted the fraud patterns myself and wrote the rules for them, so the 98% detection rate does not show how they would perform on real fraud. It shows that the pipeline catches known patterns and can measure its own accuracy.','Fraud is 0.85% of transactions here. In practice it is much rarer, so precision on real data would likely be lower.','The rules were tuned on the same simulated week used to measure them.','With only 51 fraud events, the percentages are sensitive to small changes.'],
+foot:'Portfolio project by Aseel Aldukhael · simulated data only · not a banking product.',btn:'العربية'},
+ar:{
+h1:'رادار <span>احتيال المعاملات المالية</span>',sub:'مشروع هندسة بيانات على منصة Databricks لكشف الاحتيال في عمليات الدفع بالبطاقات في مدن سعودية، بأربع قواعد قابلة للتفسير وقياس لدقة النتائج.',
+badge:'بيانات تجريبية فقط',
+pT:'خط المعالجة (Pipeline)',sT:'أبرز نقاط القوة',tl:'الأدوات المستخدمة',sl:['<b>معالجة تدريجية:</b> تُعالج البيانات الجديدة فقط، وإعادة التشغيل لا تكرر شيئاً.','<b>جودة البيانات مدمجة:</b> فحص صحة كل عملية، وإزالة المكرر، وسجل للفحوصات.','<b>تنبيهات قابلة للتفسير:</b> كل تنبيه يوضح سببه بالأرقام.','<b>نتائج مقاسة:</b> اختُبرت القواعد على حالات احتيال معروفة مسبقاً (50 من 51).'],pS:'المراحل المنفّذة حتى الآن والمراحل المخطط لها.',
+pLeg:'الطبقات التقنية: Bronze (الاستقبال) وSilver (التنظيف) وGold (التنبيهات). يعمل الـ Pipeline على Databricks Free Edition (حوسبة Serverless): كل تشغيل يعالج كل ما وصل ثم يتوقف (دفعات صغيرة availableNow)، وليس تدفقاً يعمل دائماً.',
+n:[['مصدر البيانات','Python','عمليات دفع تجريبية بالبطاقات في مدن سعودية، مع حالات احتيال معلومة مسبقاً لقياس دقة النظام','done'],['الاستقبال','Auto Loader','قراءة الملفات الجديدة فقط','done'],['التنظيف','Spark + Delta','التحقق من صحة العمليات وإزالة المكرر وتسجيل فحوصات الجودة','done'],['الكشف','Spark + Delta','أربع قواعد قابلة للتفسير على كل دفعة','done'],['العرض','HTML','هذا الموقع، يقرأ نتائج الكشف','done'],['الخطوات القادمة','Kafka + Airflow','تدفق أحداث حقيقي وجدولة','plan']],
+st:{done:'تم',plan:'مخطط'},
+rT:'عرض تفاعلي للمعاملات',rS:'عرض تفاعلي لمعاملات يوم 5 أكتوبر من البيانات التجريبية، يوضّح كيف تُفحص كل عملية فور وصولها.',
+play:'إيقاف مؤقت',playb:'تشغيل',reset:'من البداية',spd:'السرعة:',truth:'إظهار الحقيقة',truth2:'إخفاء الحقيقة',truthTip:'يعرض هل كان كل تنبيه احتيالاً فعلياً أم تنبيهاً خاطئاً، بحسب التصنيف المحدد مسبقاً.',
+k1:'تمت معالجتها',k2:'تنبيهات',k3:'مبالغ مشتبه بها (ريال)',k4:'احتيال حقيقي مكتشف',k4n:'الحقيقة مخفية',
+feedT:'تدفق المعاملات',mapT:'أين تحدث المعاملات',alT:'التنبيهات وسببها',
+am:'المبلغ',real:'احتيال حقيقي',fa:'تنبيه خاطئ',
+why:{
+ high_amount:d=>d.usual==null?`${NF(d.amount)} ريال على بطاقة بتاريخ قليل`:`${NF(d.amount)} ريال، والمعتاد للبطاقة حوالي ${NF(d.usual)} ريال`,
+ velocity:d=>`${d.count} معاملات خلال ${d.seconds} ثانية`,
+ impossible_travel:d=>`مسافة ${NF(d.km)} كم خلال ${d.minutes} دقيقة`,
+ card_testing:d=>d.small_count?`${d.small_count} معاملات صغيرة جداً متتالية`:`معاملة كبيرة (${NF(d.followed_by_big)} ريال) بعد اختبارات صغيرة`},
+rule:{high_amount:'مبلغ كبير',velocity:'سرعة عالية',impossible_travel:'تغيّر الموقع الجغرافي',card_testing:'اختبار البطاقة'},
+pat:{high_amount:'مبلغ كبير',velocity:'سرعة عالية',impossible_travel:'تغيّر الموقع الجغرافي',card_testing:'اختبار البطاقة'},
+eT:'نتائج الأداء',eS:'نتائج الأسبوع الكامل: 25,918 معاملة تتضمن 51 حالة احتيال مُدرجة مسبقاً. تُستخدم التصنيفات الحقيقية لأغراض القياس فقط.',
+b1:'حالة احتيال مكتشفة',b2:'دقة التنبيهات',b3:'تنبيهات خاطئة',
+evl:'حالات الاحتيال المكتشفة (تنبيه واحد على الأقل)',
+tblT:'التنبيهات حسب القاعدة',cr:'القاعدة',cf:'احتيال حقيقي',cx:'تنبيه خاطئ',
+tune:'مثال على الضبط: عندما كان حد المبلغ الكبير 1,500 ريال ظهر 335 تنبيهاً خاطئاً (دقة 30%). عند 3,000 ريال: 78 تنبيهاً خاطئاً (دقة 64%). أخطاء أقل مع اكتشاف نفس الحالات.',
+ruT:'القواعد الأربع',ruS:'كل قاعدة بسيطة وقابلة للتفسير وتعمل على معاملة واحدة في كل مرة، مثل مهمة Streaming.',
+ru:[['مبلغ كبير','المبلغ أكبر من 8 أضعاف المعتاد للبطاقة وفوق 3,000 ريال.','amount > 8 × median'],['سرعة عالية','5 معاملات أو أكثر على بطاقة واحدة خلال دقيقتين.','count(120s) ≥ 5'],['تغيّر الموقع الجغرافي','معاملتان على البطاقة نفسها في موقعين تبعدان أكثر من 300 كم، بفارق زمني لا يسمح بالانتقال بينهما.','km / hours > 900'],['اختبار البطاقة','3 معاملات صغيرة (≤ 10 ريال) خلال 5 دقائق، أو معاملة كبيرة بعدها مباشرة.','small ≥ 3 → big']],
+lmT:'قيود المشروع',
+lm:['الـ Pipeline يعمل بدفعات صغيرة (availableNow) على Databricks Free Edition. ليس تدفقاً يعمل دائماً.','كل البيانات تجريبية. أنماط الاحتيال أدرجتُها بنفسي والقواعد كتبتها لها، فنسبة 98% ليست دليلاً على نجاحها مع احتيال حقيقي. هي تبيّن أن الـ Pipeline يلتقط الأنماط المعروفة ويقيس نفسه.','الاحتيال هنا 0.85% من المعاملات. في الواقع أندر بكثير، فالدقة الحقيقية ستكون أقل.','القواعد ضُبطت على نفس الأسبوع التجريبي الذي تُقاس عليه.','51 حالة احتيال فقط: أرقام قليلة، فالنسب تتغير كثيراً.'],
+foot:'مشروع في ملف أعمال: أسيل الدخيل · بيانات تجريبية فقط · ليس منتجاً بنكياً.',btn:'English'}};
+const AR_CITY={Riyadh:'الرياض',Jeddah:'جدة',Dammam:'الدمام',Khobar:'الخبر',Makkah:'مكة',Madinah:'المدينة',Abha:'أبها',Tabuk:'تبوك',Buraydah:'بريدة',Hail:'حائل'};
+const AR_CAT={groceries:'بقالة',restaurants:'مطاعم',fuel:'وقود',retail:'تجزئة',pharmacy:'صيدلية',transport:'مواصلات',online_services:'خدمات إنترنت',electronics:'إلكترونيات',jewelry:'مجوهرات',cash_withdrawal:'سحب نقدي'};
+let lang=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ar'||q==='en')return q;const s=localStorage.getItem('frlang');if(s==='ar'||s==='en')return s;}catch(e){}return 'en';})();
+const NF=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const T=k=>L[lang][k];
+const city=i=>lang==='ar'?AR_CITY[DATA.cities[i]]:DATA.cities[i];
+const cat=i=>lang==='ar'?AR_CAT[DATA.cats[i]]:DATA.cats[i].replace('_',' ');
+const hhmm=s=>String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0');
+const R=DATA.rows, W=DATA.week;
+let sim=Math.max(0,R[0][0]-300),idx=0,playing=true,speed=1800,truth=false,last=performance.now();
+let st={n:0,al:0,sar:0,tp:0,fa:0}; const feedItems=[],alertItems=[],pulses=[],cityCount={};
+
+function renderStatic(){
+ document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.title=lang==='ar'?'رادار احتيال المعاملات المالية':'Transaction Fraud Radar';
+ document.querySelectorAll('[data-i]').forEach(e=>{const v=T(e.dataset.i);e.innerHTML=v;});
+ document.getElementById('lang').textContent=T('btn');
+ document.getElementById('flow').innerHTML=T('n').map(n=>`<div class="node"><b>${n[0]}</b><small>${n[1]}</small><small>${n[2]}</small><span class="chip ${n[3]}">${T('st')[n[3]]}</span></div>`).join('');
+ document.getElementById('rules').innerHTML=T('ru').map(r=>`<div class="rule"><b>${r[0]}</b>${r[1]}<code>${r[2]}</code></div>`).join('');
+ document.getElementById('lim').innerHTML=T('lm').map(x=>`<li>${x}</li>`).join('');
+ document.getElementById('foot').textContent=T('foot');
+ document.getElementById('str').innerHTML=T('sl').map(x=>`<li>${x}</li>`).join('');
+ document.getElementById('tools').innerHTML=['Python','Databricks','Apache Spark','Delta Lake','Auto Loader','pandas','HTML / JavaScript'].map(x=>`<span>${x}</span>`).join('');
+ document.getElementById('tune').textContent=T('tune');
+ // results
+ const ec=W.events_caught,et=W.events,prec=W.tp/(W.tp+W.fp);
+ document.getElementById('big').innerHTML=[[`${ec}/${et}`,T('b1')],[(prec*100).toFixed(0)+'%',T('b2')],[W.fp,T('b3')]].map(k=>`<div class="kpi"><div class="v" style="color:var(--teal)">${k[0]}</div><div class="l">${k[1]}</div></div>`).join('');
+ document.getElementById('evbars').innerHTML=`<p class="map-h">${T('evl')}</p>`+Object.entries(W.by_pattern).map(([p,v])=>`<div class="bar"><span>${T('pat')[p]}</span><div class="track"><div class="fill" style="width:${v[1]/v[0]*100}%"></div></div><span>${v[1]}/${v[0]}</span></div>`).join('');
+ document.getElementById('rtable').innerHTML=`<tr><th>${T('cr')}</th><th>${T('cf')}</th><th>${T('cx')}</th></tr>`+Object.entries(W.by_rule).map(([r,v])=>`<tr><td>${T('rule')[r]}</td><td class="ok">${v[0]}</td><td class="bad">${v[1]}</td></tr>`).join('');
+ document.getElementById('play').textContent=playing?T('play'):T('playb');
+ document.getElementById('reset').textContent=T('reset');
+ document.getElementById('truth').textContent=truth?T('truth2'):T('truth');document.getElementById('truth').title=T('truthTip');
+ renderLive();
+}
+function renderLive(){
+ document.getElementById('clock').textContent=hhmm(sim);
+ document.getElementById('kpis').innerHTML=[[NF(st.n),T('k1'),''],[NF(st.al),T('k2'),'var(--red)'],[NF(st.sar),T('k3'),'var(--amber)'],[truth?`${st.tp}/${st.al}`:'—',truth?T('k4'):T('k4n'),'var(--green)']].map(k=>`<div class="kpi"><div class="v" style="color:${k[2]||'inherit'}">${k[0]}</div><div class="l">${k[1]}</div></div>`).join('');
+ document.getElementById('feed').innerHTML=feedItems.slice(-13).reverse().map(r=>`<div class="tx ${r[7].length?'alert':''}"><span class="t">${hhmm(r[0])}</span><span>${city(r[3])} · ${cat(r[4])}${r[6]===1?' · 🌐':''}</span><span class="a">${NF(r[5])} ${lang==='ar'?'ر.س':'SAR'}</span></div>`).join('');
+ document.getElementById('alerts').innerHTML=alertItems.slice(-4).reverse().map(r=>{
+  const a=r[7][0], why=T('why')[a[0]](a[1]);
+  const v=truth?`<span class="v ${r[8]?'ok':'bad'}">${r[8]?T('real'):T('fa')}</span>`:'';
+  return `<div class="al">${v}<b>${T('rule')[a[0]]}</b> · ${city(r[3])} · ${NF(r[5])}<br><span style="color:var(--mut)">${why}</span></div>`;}).join('');
+}
+function step(now){
+ const dt=(now-last)/1000;last=now;
+ if(playing){sim+=dt*speed;
+  while(idx<R.length&&R[idx][0]<=sim){const r=R[idx++];st.n++;feedItems.push(r);if(feedItems.length>40)feedItems.shift();
+   cityCount[r[3]]=(cityCount[r[3]]||0)+1;
+   if(r[7].length){st.al++;st.sar+=r[5];if(r[8])st.tp++;else st.fa++;alertItems.push(r);pulses.push({c:r[3],t:now});if(alertItems.length>30)alertItems.shift();}}
+  if(idx>=R.length){playing=false;document.getElementById('play').textContent=T('playb');document.getElementById('play').classList.remove('on');}
+  renderLive();}
+ drawMap(now);requestAnimationFrame(step);
+}
+const cv=document.getElementById('map'),cx=cv.getContext('2d');
+function drawMap(now){
+ const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;if(cv.width!==Math.round(r.width*dpr)){cv.width=r.width*dpr;cv.height=r.height*dpr;}
+ cx.setTransform(dpr,0,0,dpr,0,0);const w=r.width,h=r.height;cx.clearRect(0,0,w,h);
+ const cs=DATA.coords,names=DATA.cities;const lats=names.map(n=>cs[n][0]),lons=names.map(n=>cs[n][1]);
+ const la0=Math.min(...lats)-1,la1=Math.max(...lats)+1,lo0=Math.min(...lons)-1.5,lo1=Math.max(...lons)+1.5;
+ const X=lo=>20+(lo-lo0)/(lo1-lo0)*(w-40),Y=la=>h-18-(la-la0)/(la1-la0)*(h-36);
+ cx.font='600 11px Cairo,sans-serif';cx.textAlign='center';
+ names.forEach((n,i)=>{const x=X(cs[n][1]),y=Y(cs[n][0]),c=cityCount[i]||0,rad=4+Math.sqrt(c)*0.45;
+  cx.fillStyle='rgba(46,196,182,.55)';cx.beginPath();cx.arc(x,y,rad,0,7);cx.fill();
+  cx.fillStyle='#9fb6c4';const below=(n==='Khobar'||n==='Makkah');cx.fillText(city(i),x,below?y+rad+12:y-rad-4);});
+ for(let i=pulses.length-1;i>=0;i--){const p=pulses[i],age=(now-p.t)/1200;if(age>1){pulses.splice(i,1);continue;}
+  const n=names[p.c],x=X(cs[n][1]),y=Y(cs[n][0]);cx.strokeStyle=`rgba(255,93,93,${1-age})`;cx.lineWidth=2;cx.beginPath();cx.arc(x,y,8+age*26,0,7);cx.stroke();}
+}
+function restart(){sim=Math.max(0,R[0][0]-300);idx=0;st={n:0,al:0,sar:0,tp:0,fa:0};feedItems.length=0;alertItems.length=0;pulses.length=0;for(const k in cityCount)delete cityCount[k];playing=true;renderStatic();document.getElementById('play').classList.add('on');}
+document.getElementById('play').onclick=function(){playing=!playing;if(idx>=R.length)restart();this.classList.toggle('on',playing);this.textContent=playing?T('play'):T('playb');};
+document.getElementById('reset').onclick=restart;
+document.getElementById('truth').onclick=function(){truth=!truth;this.classList.toggle('on',truth);renderStatic();};
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-s]').forEach(x=>x.classList.remove('on'));b.classList.add('on');speed=+b.dataset.s;});
+document.getElementById('lang').onclick=()=>{lang=lang==='ar'?'en':'ar';try{localStorage.setItem('frlang',lang);}catch(e){}renderStatic();};
+renderStatic();requestAnimationFrame(step);
+</script>
+</body>
+</html>
