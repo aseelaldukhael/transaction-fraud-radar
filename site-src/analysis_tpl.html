@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fraud Analysis · Transaction Fraud Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0E1A24;--panel:#142634;--panel2:#193146;--line:#25425A;--ink:#EAF2F7;--mut:#93A9B8;--teal:#2EC4B6;--amber:#FFB703;--red:#FF5D5D;--green:#4ADE80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,system-ui,Segoe UI,sans-serif;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+header{padding:26px 0 8px}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.3px}
+h1 span{color:var(--teal)}
+.sub{color:var(--mut);margin:6px 0 0;max-width:760px}
+.back{display:inline-block;margin-top:10px;color:var(--teal);font-weight:700;font-size:14px;text-decoration:none}
+.back:hover{text-decoration:underline}
+#lang{font:inherit;font-weight:700;font-size:14px;background:var(--teal);color:#06222B;border:0;border-radius:999px;padding:7px 18px;cursor:pointer;white-space:nowrap}
+.badge{display:inline-block;margin-top:12px;margin-inline-start:10px;background:#3a2f0d;color:var(--amber);border:1px solid #6b5412;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
+section{margin:26px 0}
+h2{font-size:20px;margin:0 0 4px}
+.lead{color:var(--mut);margin:0 0 14px;font-size:14.5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpi .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12.5px;color:var(--mut)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bar{display:grid;grid-template-columns:140px 1fr 70px;gap:8px;align-items:center;margin:8px 0;font-size:13.5px}
+.bar .n{font-variant-numeric:tabular-nums;text-align:end;color:var(--mut)}
+.track{height:13px;background:#0b1620;border-radius:99px;overflow:hidden;display:flex}
+.track i{display:block;height:100%}
+.g{background:var(--green)}.r{background:var(--red)}.t{background:var(--teal)}.a{background:var(--amber)}.m{background:#4b6a80}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin:0 0 6px}
+.key b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}
+.take{margin:12px 0 0;padding:10px 12px;background:var(--panel2);border-radius:10px;font-size:14px;border-inline-start:3px solid var(--teal)}
+.h3{font-weight:700;margin:0 0 6px;font-size:14.5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 6px;border-bottom:1px solid #1f384c;text-align:start;font-variant-numeric:tabular-nums}
+th{color:var(--mut);font-weight:600}
+td.num,th.num{text-align:end}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:14px}
+.ctl label{display:block;font-size:13.5px;font-weight:600;margin-bottom:4px}
+.ctl label b{color:var(--teal)}
+input[type=range]{width:100%;accent-color:#2EC4B6;direction:ltr}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);direction:ltr}
+.out{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.out .kpi .v{font-size:22px}
+svg{width:100%;height:auto;display:block;background:#0b1620;border-radius:10px;direction:ltr}
+svg text{fill:#93A9B8;font-size:12px;font-family:Cairo,system-ui,sans-serif}
+.cur{display:inline-block;margin-inline-start:8px;background:#12382b;color:var(--green);border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700}
+ul.lim{margin:0;padding-inline-start:20px;font-size:14px}ul.lim li{margin:5px 0}
+footer{color:var(--mut);font-size:12.5px;padding:18px 0 40px;border-top:1px solid var(--line);margin-top:30px}
+@media(max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}.row,.ctl{grid-template-columns:1fr}.out{grid-template-columns:repeat(2,1fr)}.bar{grid-template-columns:110px 1fr 56px}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="top">
+  <div>
+   <h1 id="h1"></h1>
+   <p class="sub" id="sub"></p>
+  </div>
+  <button id="lang"></button>
+ </div>
+ <a class="back" id="back" href="index.html"></a><span class="badge" id="badge"></span>
+</header>
+
+<section><div class="kpis" id="kpis"></div></section>
+
+<section>
+ <h2 id="s1t"></h2><p class="lead" id="s1l"></p>
+ <div class="card"><div class="key"><span><b class="g"></b><span id="kreal"></span></span><span><b class="r"></b><span id="kfalse"></span></span></div><div id="rules"></div><div class="take" id="t1"></div></div>
+</section>
+
+<section>
+ <h2 id="s2t"></h2><p class="lead" id="s2l"></p>
+ <div class="row">
+  <div class="card"><div class="h3" id="h2a"></div><div id="fpcat"></div></div>
+  <div class="card"><div class="h3" id="h2b"></div><div id="fpcity"></div></div>
+ </div>
+ <div class="card" style="margin-top:14px"><div class="h3" id="h2c"></div><div style="overflow-x:auto"><table id="amt"></table></div><div class="take" id="t2"></div></div>
+</section>
+
+<section>
+ <h2 id="s3t"></h2><p class="lead" id="s3l"></p>
+ <div class="card"><div class="key"><span><b class="t"></b><span id="kev"></span></span><span><b class="m"></b><span id="ktx"></span></span></div><div id="miss"></div><div class="take" id="t3"></div></div>
+</section>
+
+<section>
+ <h2 id="s4t"></h2><p class="lead" id="s4l"></p>
+ <div class="card">
+  <div class="ctl">
+   <div><label><span id="l1"></span>: <b id="v1"></b><span class="cur" id="c1" hidden></span></label><input type="range" id="r1" min="0" step="1"><div class="ticks" id="tk1"></div></div>
+   <div><label><span id="l2"></span>: <b id="v2"></b><span class="cur" id="c2" hidden></span></label><input type="range" id="r2" min="0" step="1"><div class="ticks" id="tk2"></div></div>
+  </div>
+  <div class="out" id="out"></div>
+  <div class="h3" id="h4c"></div>
+  <svg id="curve" viewBox="0 0 800 240" role="img"></svg>
+  <div class="take" id="t4"></div>
+ </div>
+</section>
+
+<section>
+ <h2 id="s5t"></h2>
+ <div class="card"><ul class="lim" id="lm"></ul></div>
+</section>
+<footer id="foot"></footer>
+</div>
+
+<script>
+const D=__DATA__;
+const L={en:{
+ h1:'Fraud <span>Analysis</span>',sub:'What the detection results show: which rule produces the false alarms, which fraud gets missed, and how the settings change the balance between catching fraud and raising false alarms.',
+ back:'← Pipeline and interactive replay',badge:'Simulated data only',btn:'العربية',
+ k:['Transactions','Fraud transactions','Fraud caught','Alert precision','False alarms','Fraud events caught'],
+ s1t:'Which rule is accurate?',s1l:'Every alert, split by whether it was real fraud or a false alarm (using the labels set in advance).',kreal:'Real fraud',kfalse:'False alarm',
+ t1:(a)=>`${a.fp} of the ${a.fpAll} false alarms (${a.pct}%) come from the large-amount rule. The other three rules raised ${a.other} alerts, with ${a.otherFalse} false alarm${a.otherFalse===1?'':'s'}.`,
+ rule:{high_amount:'Large amount',velocity:'Rapid transactions',impossible_travel:'Location change',card_testing:'Card testing'},
+ s2t:'Where do the false alarms come from?',s2l:'The false alarms are normal transactions that looked unusual to the rules.',
+ h2a:'False alarms by category',h2b:'False alarms by city',h2c:'By transaction amount',
+ th:['Amount (SAR)','Transactions','Fraud','Flagged','False alarms'],
+ t2:(a)=>`${a.two} of the ${a.fpAll} false alarms are in ${a.names}: expensive purchases are rare, so a large payment looks unusual even when it is genuine. This is the cost of the large-amount rule.`,
+ s3t:'Which fraud was missed?',s3l:'Fraud is counted two ways: each transaction, and each fraud event (a group of fraudulent transactions on one card).',kev:'Events caught',ktx:'Transactions flagged',
+ miss:{events:'events',tx:'transactions'},
+ t3:(a)=>`${a.evC} of ${a.ev} events were caught, but only ${a.txC} of ${a.tx} fraudulent transactions (${a.p}%). The rules need several signs before they fire, for example 5 transactions in 2 minutes, so the first transactions of an event pass before the alert. Stopping them would need a stricter or earlier rule.`,
+ s4t:'Try the settings',s4l:'The rules were run again over the whole week with different settings. Move the sliders to see the trade-off.',
+ l1:'Minimum amount for the large-amount rule',l2:'Times the card’s usual amount',u:'SAR',cur:'current',
+ o:['Fraud transactions caught','False alarms','Alert precision','Fraud events caught','Fraud transactions missed'],
+ h4c:'False alarms at each minimum amount (with the selected multiplier)',axf:'false alarms',
+ t4:(a)=>`With these settings: ${a.fp} false alarms and ${a.tp} of ${a.fr} fraud transactions caught (${a.prec}% precision). ${a.same?'This is the current setting.':`Compared with the current setting (3,000 SAR, ×8): ${a.dfp} false alarms and ${a.dtp} fraud transactions caught.`}`,
+ s5t:'How to read this analysis',
+ lm:['All data is simulated. I created the fraud patterns and wrote the rules for them, so these numbers show how the rules behave on this data, not how much fraud a real bank sees.','The settings were chosen using this same data, so they are probably better here than they would be on new data.','Time-of-day analysis is left out: the daily rhythm of the simulated transactions is too simple to say anything real.'],
+ foot:'Portfolio project by Aseel Aldukhael · simulated data only · not a banking product.',
+ cats:{groceries:'groceries',restaurants:'restaurants',fuel:'fuel',retail:'retail',pharmacy:'pharmacy',transport:'transport',online_services:'online services',electronics:'electronics',jewelry:'jewelry',cash_withdrawal:'cash withdrawal'}
+},ar:{
+ h1:'تحليل <span>الاحتيال</span>',sub:'ماذا تقول نتائج الكشف: أي قاعدة تُنتج التنبيهات الخاطئة، وأي احتيال فات، وكيف تغيّر الإعدادات التوازن بين اكتشاف الاحتيال وكثرة التنبيهات الخاطئة.',
+ back:'→ خط المعالجة والعرض التفاعلي',badge:'بيانات تجريبية فقط',btn:'English',
+ k:['المعاملات','معاملات احتيال','احتيال مكتشف','دقة التنبيهات','تنبيهات خاطئة','حالات احتيال مكتشفة'],
+ s1t:'أي قاعدة دقيقة؟',s1l:'كل تنبيه، مقسّم إلى احتيال حقيقي أو تنبيه خاطئ (بحسب التصنيفات المحددة مسبقاً).',kreal:'احتيال حقيقي',kfalse:'تنبيه خاطئ',
+ t1:(a)=>`${a.fp} من ${a.fpAll} تنبيهاً خاطئاً (${a.pct}%) تأتي من قاعدة المبلغ الكبير. القواعد الثلاث الأخرى أصدرت ${a.other} تنبيهاً، منها ${a.otherFalse} تنبيه خاطئ.`,
+ rule:{high_amount:'مبلغ كبير',velocity:'سرعة عالية',impossible_travel:'تغيّر الموقع الجغرافي',card_testing:'اختبار البطاقة'},
+ s2t:'من أين تأتي التنبيهات الخاطئة؟',s2l:'التنبيهات الخاطئة هي معاملات عادية بدت غير معتادة للقواعد.',
+ h2a:'التنبيهات الخاطئة حسب الفئة',h2b:'التنبيهات الخاطئة حسب المدينة',h2c:'حسب مبلغ المعاملة',
+ th:['المبلغ (ريال)','المعاملات','احتيال','تم تنبيهها','تنبيهات خاطئة'],
+ t2:(a)=>`${a.two} من ${a.fpAll} تنبيهاً خاطئاً في ${a.names}: المشتريات الغالية قليلة، فيبدو المبلغ الكبير غير معتاد حتى لو كان سليماً. هذه كلفة قاعدة المبلغ الكبير.`,
+ s3t:'أي احتيال فات؟',s3l:'نعدّ الاحتيال بطريقتين: كل معاملة، وكل حالة احتيال (مجموعة معاملات احتيال على بطاقة واحدة).',kev:'حالات مكتشفة',ktx:'معاملات تم تنبيهها',
+ miss:{events:'حالات',tx:'معاملات'},
+ t3:(a)=>`اكتُشفت ${a.evC} من ${a.ev} حالة، لكن ${a.txC} فقط من ${a.tx} معاملة احتيال (${a.p}%). القواعد تحتاج عدة إشارات قبل أن تنبّه، مثل 5 معاملات خلال دقيقتين، فتمرّ أوائل معاملات الحالة قبل التنبيه. إيقافها يحتاج قاعدة أكثر صرامة أو أبكر.`,
+ s4t:'جرّب الإعدادات',s4l:'أُعيد تشغيل القواعد على الأسبوع كامل بإعدادات مختلفة. حرّك المؤشرين لترى المقايضة.',
+ l1:'أقل مبلغ لقاعدة المبلغ الكبير',l2:'مضاعف المبلغ المعتاد للبطاقة',u:'ريال',cur:'الحالي',
+ o:['معاملات احتيال مكتشفة','تنبيهات خاطئة','دقة التنبيهات','حالات احتيال مكتشفة','معاملات احتيال فائتة'],
+ h4c:'التنبيهات الخاطئة عند كل حد أدنى للمبلغ (مع المضاعف المختار)',axf:'تنبيه خاطئ',
+ t4:(a)=>`بهذه الإعدادات: ${a.fp} تنبيهاً خاطئاً، واكتُشفت ${a.tp} من ${a.fr} معاملة احتيال (دقة ${a.prec}%). ${a.same?'هذا هو الإعداد الحالي.':`مقارنة بالإعداد الحالي (3,000 ريال، ×8): ${a.dfp} في التنبيهات الخاطئة، و${a.dtp} في معاملات الاحتيال المكتشفة.`}`,
+ s5t:'كيف تُقرأ هذه التحليلات',
+ lm:['كل البيانات تجريبية. أنا أنشأت أنماط الاحتيال وكتبت القواعد لها، فهذه الأرقام تبيّن سلوك القواعد على هذه البيانات، لا حجم الاحتيال الذي يراه بنك حقيقي.','اخترت الإعدادات من البيانات نفسها، فهي غالباً أفضل هنا مما ستكون على بيانات جديدة.','لم أضع تحليل أوقات اليوم: إيقاع المعاملات اليومي في البيانات التجريبية بسيط جداً ولا يقول شيئاً حقيقياً.'],
+ foot:'مشروع في ملف أعمال: أسيل الدخيل · بيانات تجريبية فقط · ليس منتجاً بنكياً.',
+ cats:{groceries:'بقالة',restaurants:'مطاعم',fuel:'وقود',retail:'تجزئة',pharmacy:'صيدلية',transport:'مواصلات',online_services:'خدمات إنترنت',electronics:'إلكترونيات',jewelry:'مجوهرات',cash_withdrawal:'سحب نقدي'}
+}};
+const AR_CITY={Riyadh:'الرياض',Jeddah:'جدة',Dammam:'الدمام',Khobar:'الخبر',Makkah:'مكة',Madinah:'المدينة',Abha:'أبها',Tabuk:'تبوك',Buraydah:'بريدة',Hail:'حائل'};
+let lang=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='ar'||q==='en')return q;const s=localStorage.getItem('frlang');if(s==='ar'||s==='en')return s;}catch(e){}return 'en';})();
+const NF=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const PC=(a,b)=>b?(100*a/b).toFixed(1).replace(/\.0$/,''):'0';
+const T=k=>L[lang][k];
+const $=id=>document.getElementById(id);
+const W=D.week,S=D.sweep;
+const CUR={min:3000,mult:8};
+const at=(m,x)=>S.grid.find(g=>g.min===m&&g.mult===x);
+const bar=(label,parts,max,nTxt)=>`<div class="bar"><div>${label}</div><div class="track">${parts.map(p=>`<i class="${p[0]}" style="width:${max?100*p[1]/max:0}%"></i>`).join('')}</div><div class="n"><bdi dir="ltr">${nTxt}</bdi></div></div>`;
+let i1=S.mins.indexOf(CUR.min),i2=S.mults.indexOf(CUR.mult);
+
+function render(){
+ const t=L[lang];
+ document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ document.title=(lang==='ar'?'تحليل الاحتيال · رادار احتيال المعاملات المالية':'Fraud Analysis · Transaction Fraud Radar');
+ $('h1').innerHTML=t.h1;$('sub').textContent=t.sub;$('back').textContent=t.back;$('back').href='index.html'+(lang==='ar'?'?lang=ar':'');
+ $('badge').textContent=t.badge;$('lang').textContent=t.btn;$('foot').textContent=t.foot;
+ // KPIs
+ const prec=PC(W.caught,W.caught+W.fp),rec=PC(W.caught,W.fraud);
+ const kv=[NF(W.n),`${NF(W.fraud)} <small style="font-size:13px;color:var(--mut)">(${(100*W.fraud/W.n).toFixed(2)}%)</small>`,`${W.caught}/${W.fraud} <small style="font-size:13px;color:var(--mut)">(${rec}%)</small>`,prec+'%',NF(W.fp),`${D.pattern.reduce((s,p)=>s+p.ev_caught,0)}/${W.events}`];
+ $('kpis').innerHTML=t.k.map((l,i)=>`<div class="kpi"><div class="v"><bdi dir="ltr">${kv[i]}</bdi></div><div class="l">${l}</div></div>`).join('');
+ // 1 rules
+ $('s1t').textContent=t.s1t;$('s1l').textContent=t.s1l;$('kreal').textContent=t.kreal;$('kfalse').textContent=t.kfalse;
+ const rmax=Math.max(...D.rule.map(r=>r.alerts));
+ $('rules').innerHTML=D.rule.slice().sort((a,b)=>b.alerts-a.alerts).map(r=>bar(t.rule[r.k],[['g',r.real],['r',r.false]],rmax,`${r.real} / ${r.false}`)).join('');
+ const fpAll=D.rule.reduce((s,r)=>s+r.false,0),ha=D.rule.find(r=>r.k==='high_amount');
+ const other=D.rule.filter(r=>r.k!=='high_amount');
+ $('t1').textContent=t.t1({fp:ha.false,fpAll,pct:PC(ha.false,fpAll),other:other.reduce((s,r)=>s+r.alerts,0),otherFalse:other.reduce((s,r)=>s+r.false,0)});
+ // 2 false alarms
+ $('s2t').textContent=t.s2t;$('s2l').textContent=t.s2l;$('h2a').textContent=t.h2a;$('h2b').textContent=t.h2b;$('h2c').textContent=t.h2c;
+ const catRows=D.cat.filter(c=>c.fp>0).sort((a,b)=>b.fp-a.fp),cityRows=D.city.filter(c=>c.fp>0).sort((a,b)=>b.fp-a.fp);
+ const cmax=Math.max(...catRows.map(c=>c.fp));
+ $('fpcat').innerHTML=catRows.map(c=>bar(t.cats[c.k],[['r',c.fp]],cmax,c.fp)).join('');
+ $('fpcity').innerHTML=cityRows.map(c=>bar(lang==='ar'?AR_CITY[c.k]:c.k,[['r',c.fp]],cmax,c.fp)).join('');
+ $('amt').innerHTML=`<tr>${t.th.map((h,i)=>`<th class="${i?'num':''}">${h}</th>`).join('')}</tr>`+D.amount.map(a=>`<tr><td>${a.k}</td><td class="num">${NF(a.n)}</td><td class="num">${NF(a.fraud)}</td><td class="num">${NF(a.flagged)}</td><td class="num">${NF(a.fp)}</td></tr>`).join('');
+ const top2=catRows.slice(0,2);
+ $('t2').textContent=t.t2({two:top2.reduce((s,c)=>s+c.fp,0),fpAll,names:top2.map(c=>t.cats[c.k]).join(lang==='ar'?' و':' and ')});
+ // 3 missed
+ $('s3t').textContent=t.s3t;$('s3l').textContent=t.s3l;$('kev').textContent=t.kev;$('ktx').textContent=t.ktx;
+ $('miss').innerHTML=D.pattern.map(p=>`<div class="h3" style="margin-top:12px">${t.rule[p.k]}</div>`+bar(t.miss.events,[['t',p.ev_caught]],p.events,`${p.ev_caught}/${p.events}`)+bar(t.miss.tx,[['m',p.caught]],p.n,`${p.caught}/${p.n}`)).join('');
+ const evC=D.pattern.reduce((s,p)=>s+p.ev_caught,0);
+ $('t3').textContent=t.t3({evC,ev:W.events,txC:W.caught,tx:W.fraud,p:PC(W.caught,W.fraud)});
+ // 4 explorer
+ $('s4t').textContent=t.s4t;$('s4l').textContent=t.s4l;$('l1').textContent=t.l1;$('l2').textContent=t.l2;$('h4c').textContent=t.h4c;
+ const r1=$('r1'),r2=$('r2');r1.max=S.mins.length-1;r2.max=S.mults.length-1;r1.value=i1;r2.value=i2;
+ const m=S.mins[i1],x=S.mults[i2],g=at(m,x),c=at(CUR.min,CUR.mult);
+ $('v1').textContent=NF(m)+' '+t.u;$('v2').textContent='×'+x;
+ $('c1').hidden=m!==CUR.min;$('c2').hidden=x!==CUR.mult;$('c1').textContent=$('c2').textContent=t.cur;
+ $('tk1').innerHTML=S.mins.map(v=>`<span>${NF(v)}</span>`).join('');$('tk2').innerHTML=S.mults.map(v=>`<span>×${v}</span>`).join('');
+ const ov=[`${g.tp}/${S.fraud_txns}`,NF(g.fp),PC(g.tp,g.tp+g.fp)+'%',`${g.ev}/${S.events}`,S.fraud_txns-g.tp];
+ $('out').innerHTML=t.o.map((l,i)=>`<div class="kpi"><div class="v" style="color:${i===1?'var(--red)':'inherit'}"><bdi dir="ltr">${ov[i]}</bdi></div><div class="l">${l}</div></div>`).join('');
+ $('t4').textContent=t.t4({fp:NF(g.fp),tp:g.tp,fr:S.fraud_txns,prec:PC(g.tp,g.tp+g.fp),dfp:(g.fp-c.fp>=0?'+':'')+(g.fp-c.fp),dtp:(g.tp-c.tp>=0?'+':'')+(g.tp-c.tp),same:g===c});
+ // curve (false alarms vs min amount for selected multiplier)
+ const pts=S.mins.map(v=>at(v,x)),mx=Math.max(...pts.map(p=>p.fp),10),X=i=>50+i*(700/(pts.length-1)),Y=v=>205-180*v/mx;
+ let s=[0,.5,1].map(f=>`<line x1="50" x2="750" y1="${Y(mx*f)}" y2="${Y(mx*f)}" stroke="#1f384c"/><text x="44" y="${Y(mx*f)+4}" text-anchor="end">${NF(mx*f)}</text>`).join('');
+ s+=`<polyline fill="none" stroke="#FF5D5D" stroke-width="2.5" points="${pts.map((p,i)=>X(i)+','+Y(p.fp)).join(' ')}"/>`;
+ s+=pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.fp)}" r="${i===i1?7:4}" fill="${i===i1?'#2EC4B6':'#FF5D5D'}"/><text x="${X(i)}" y="228" text-anchor="middle">${NF(S.mins[i])}</text>`).join('');
+ s+=`<text x="${X(i1)}" y="${Y(pts[i1].fp)-12}" text-anchor="middle" style="fill:#EAF2F7;font-weight:700">${pts[i1].fp}</text>`;
+ $('curve').innerHTML=s;$('curve').setAttribute('aria-label',t.h4c);
+ // limits
+ $('s5t').textContent=t.s5t;$('lm').innerHTML=t.lm.map(x=>`<li>${x}</li>`).join('');
+}
+$('r1').oninput=e=>{i1=+e.target.value;render()};
+$('r2').oninput=e=>{i2=+e.target.value;render()};
+$('lang').onclick=()=>{lang=lang==='ar'?'en':'ar';try{localStorage.setItem('frlang',lang)}catch(e){}render()};
+render();
+</script>
+</body>
+</html>

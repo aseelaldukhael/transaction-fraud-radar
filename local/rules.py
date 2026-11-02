@@ -9,7 +9,7 @@ from datetime import datetime
 
 # ---- thresholds (easy to tune, and to explain in an interview) ----
 HIGH_MULT = 8          # amount > 8x the card's usual amount ...
-HIGH_MIN_SAR = 3000    # ... and at least this much (tuned: 1500 gave 335 false alarms)
+HIGH_MIN_SAR = 3000    # ... and at least this much (tuned: 1500 gave 301 false alarms)
 NEW_CARD_LIMIT = 3000  # card with little history: flag above this amount
 VELOCITY_N, VELOCITY_SEC = 5, 120      # 5 transactions within 2 minutes
 TRAVEL_KMH = 900       # faster than a plane = impossible

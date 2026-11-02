@@ -3,7 +3,8 @@
 A data engineering project that detects suspicious card transactions on **simulated** Saudi data.
 The pipeline runs on **Databricks** (Bronze / Silver / Gold on Delta Lake), and a bilingual website (English / Arabic) replays the results.
 
-**Live demo:** https://aseelaldukhael.github.io/transaction-fraud-radar/
+**Live demo:** https://aseelaldukhael.github.io/transaction-fraud-radar/  
+**Fraud analysis dashboard:** https://aseelaldukhael.github.io/transaction-fraud-radar/analysis.html
 
 > All data is simulated. This is a portfolio project, not a banking product.
 
@@ -14,6 +15,7 @@ The pipeline runs on **Databricks** (Bronze / Silver / Gold on Delta Lake), and 
 3. **Cleans** them and stores them in Delta tables.
 4. **Detects** suspicious activity with four rules and writes alerts.
 5. **Shows** the results in an interactive website that replays the transactions.
+6. **Analyses** the results in a dashboard: which rule is accurate, where the false alarms come from, which fraud is missed, and how the settings change the balance.
 
 ## Architecture
 
@@ -62,7 +64,7 @@ Simulated week: 25,918 transactions, 220 of them fraud (0.85%), grouped in 51 fr
 
 Caught by rule: card testing 17/17, high amount 11/12, location change 11/11, rapid transactions 11/11.
 
-Threshold tuning matters: a high-amount limit of 1,500 SAR gave 335 false alarms (30% precision), while 3,000 SAR gave 78 (64% precision).
+Threshold tuning matters: a high-amount limit of 1,500 SAR gave 301 false alarms (32% precision), while 3,000 SAR gave 78 (64% precision).
 
 ## Limitations
 
@@ -80,18 +82,21 @@ Threshold tuning matters: a high-amount limit of 1,500 SAR gave 335 false alarms
 ## Project structure
 
 ```
-index.html          the website (GitHub Pages)
+index.html          the website: interactive replay (GitHub Pages)
+analysis.html       the analysis dashboard
 local/              run the idea on your own computer (Python + pandas)
   generate_transactions.py   create simulated transactions
   rules.py                   the fraud rules
   detect.py                  run the rules
   evaluate.py                measure precision and recall
+  make_analysis.py           aggregate results for the analysis dashboard
+                             (also re-runs the rules with different settings)
 databricks/         the pipeline, as Databricks notebooks (run in order)
   01_setup.py                schema and volumes
   02_producer.py             drops transaction files in batches
   03_pipeline.py             Bronze -> Silver -> Gold
   04_evaluate_export.py      metrics and data.json export
-site-src/           website template and build script
+site-src/           website templates and build script
 ```
 
 ## How to run
@@ -111,7 +116,8 @@ python evaluate.py
 2. Run `01_setup.py`, then upload `transactions.csv` and `labels.csv` (from the local step) to the `raw` volume.
 3. Run `02_producer.py` a few times (each run drops one batch of files), then run `03_pipeline.py` after each.
 4. Run `04_evaluate_export.py` to see the metrics and create `data.json`.
-5. Build the website: `python site-src/build_site.py data.json`.
+5. Build the website: `python site-src/build_site.py data.json analysis_data.json`.
+   (`analysis_data.json` comes from `local/make_analysis.py`.)
 
 ## Tools
 

@@ -16,6 +16,7 @@ h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.3px}
 h1 span{color:var(--teal)}
 .sub{color:var(--mut);margin:6px 0 0;max-width:720px}
 #lang{font:inherit;font-weight:700;font-size:14px;background:var(--teal);color:#06222B;border:0;border-radius:999px;padding:7px 18px;cursor:pointer;white-space:nowrap}
+.anl{display:inline-block;margin-top:12px;margin-inline-start:10px;color:var(--teal);font-weight:700;font-size:14px;text-decoration:none}.anl:hover{text-decoration:underline}
 .badge{display:inline-block;margin-top:12px;background:#3a2f0d;color:var(--amber);border:1px solid #6b5412;border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600}
 section{margin:26px 0}
 h2{font-size:20px;margin:0 0 4px}
@@ -82,6 +83,7 @@ footer{color:var(--mut);font-size:12.5px;padding:18px 0 40px;border-top:1px soli
   <h1 data-i="h1"></h1>
   <p class="sub" data-i="sub"></p>
   <span class="badge" data-i="badge"></span>
+  <a class="anl" id="anl" href="analysis.html" data-i="anl"></a>
  </div><button id="lang" type="button"></button></div>
 </div></header>
 <main class="wrap">
@@ -136,7 +138,7 @@ footer{color:var(--mut);font-size:12.5px;padding:18px 0 40px;border-top:1px soli
 const DATA=__DATA__;
 const L={en:{
 h1:'Transaction <span>Fraud Radar</span>',sub:'A data engineering project on Databricks that detects fraud in card transactions across Saudi cities, using four explainable rules and measuring its own accuracy.',
-badge:'Simulated data only',
+badge:'Simulated data only',anl:'Fraud analysis →',
 pT:'The pipeline',sT:'Key strengths',tl:'Tools used',sl:['<b>Incremental processing:</b> only new data is processed, and re-running never duplicates results.','<b>Built-in data quality:</b> every transaction is validated, duplicates are removed, and checks are logged.','<b>Explainable alerts:</b> every alert states its reason, with the actual figures.','<b>Measured results:</b> the rules were tested on fraud cases labelled in advance (50 of 51 fraud events detected).'],pS:'Stages implemented so far and stages still planned.',
 pLeg:'Technical layers: Bronze (ingestion), Silver (cleaning), Gold (alerts). The pipeline runs on Databricks Free Edition, which uses serverless compute: each run processes everything that arrived and then stops (availableNow micro-batches), not an always-on stream.',
 n:[['Data source','Python','Simulated card transactions in Saudi cities, with fraud cases labelled in advance to measure accuracy','done'],['Ingestion','Auto Loader','Reads only the new files','done'],['Cleaning','Spark + Delta','Validates transactions, removes duplicates, logs quality checks','done'],['Detection','Spark + Delta','Four explainable rules on every batch','done'],['Display','HTML','This site, reading the detection results','done'],['Next steps','Kafka + Airflow','Real event stream and scheduling','plan']],
@@ -157,7 +159,7 @@ eT:'Performance results',eS:'Results for the full week: 25,918 transactions, inc
 b1:'fraud events caught',b2:'alert precision',b3:'false alarms',
 evl:'Fraud events caught (at least one alert)',
 tblT:'Alerts by rule',cr:'Rule',cf:'Real fraud',cx:'False alarm',
-tune:'Tuning example: with the large-amount threshold at 1,500 SAR, there were 335 false alarms (30% precision). At 3,000 SAR, there were 78 (64% precision), with the same fraud events caught.',
+tune:'Tuning example: with the large-amount threshold at 1,500 SAR, there were 301 false alarms (32% precision). At 3,000 SAR, there were 78 (64% precision), with the same fraud events caught.',
 ruT:'The four rules',ruS:'Each rule is simple, explainable, and evaluates one transaction at a time, as a streaming job would.',
 ru:[['Large amount','Amount above 8 times the card\'s usual spending, and at least 3,000 SAR.','amount > 8 × median'],['Rapid transactions','5 or more transactions on one card within 2 minutes.','count(120s) ≥ 5'],['Location change','Two transactions on the same card in locations more than 300 km apart, too close in time to travel between.','km / hours > 900'],['Card testing','Three or more very small transactions (≤ 10 SAR) within 5 minutes, or a large one right after.','small ≥ 3 → big']],
 lmT:'Project limitations',
@@ -165,7 +167,7 @@ lm:['The pipeline runs in micro-batches (availableNow) on Databricks Free Editio
 foot:'Portfolio project by Aseel Aldukhael · simulated data only · not a banking product.',btn:'العربية'},
 ar:{
 h1:'رادار <span>احتيال المعاملات المالية</span>',sub:'مشروع هندسة بيانات على منصة Databricks لكشف الاحتيال في عمليات الدفع بالبطاقات في مدن سعودية، بأربع قواعد قابلة للتفسير وقياس لدقة النتائج.',
-badge:'بيانات تجريبية فقط',
+badge:'بيانات تجريبية فقط',anl:'تحليل الاحتيال ←',
 pT:'خط المعالجة (Pipeline)',sT:'أبرز نقاط القوة',tl:'الأدوات المستخدمة',sl:['<b>معالجة تدريجية:</b> تُعالج البيانات الجديدة فقط، وإعادة التشغيل لا تكرر شيئاً.','<b>جودة البيانات مدمجة:</b> فحص صحة كل عملية، وإزالة المكرر، وسجل للفحوصات.','<b>تنبيهات قابلة للتفسير:</b> كل تنبيه يوضح سببه بالأرقام.','<b>نتائج مقاسة:</b> اختُبرت القواعد على حالات احتيال معروفة مسبقاً (50 من 51).'],pS:'المراحل المنفّذة حتى الآن والمراحل المخطط لها.',
 pLeg:'الطبقات التقنية: Bronze (الاستقبال) وSilver (التنظيف) وGold (التنبيهات). يعمل الـ Pipeline على Databricks Free Edition (حوسبة Serverless): كل تشغيل يعالج كل ما وصل ثم يتوقف (دفعات صغيرة availableNow)، وليس تدفقاً يعمل دائماً.',
 n:[['مصدر البيانات','Python','عمليات دفع تجريبية بالبطاقات في مدن سعودية، مع حالات احتيال معلومة مسبقاً لقياس دقة النظام','done'],['الاستقبال','Auto Loader','قراءة الملفات الجديدة فقط','done'],['التنظيف','Spark + Delta','التحقق من صحة العمليات وإزالة المكرر وتسجيل فحوصات الجودة','done'],['الكشف','Spark + Delta','أربع قواعد قابلة للتفسير على كل دفعة','done'],['العرض','HTML','هذا الموقع، يقرأ نتائج الكشف','done'],['الخطوات القادمة','Kafka + Airflow','تدفق أحداث حقيقي وجدولة','plan']],
@@ -186,7 +188,7 @@ eT:'نتائج الأداء',eS:'نتائج الأسبوع الكامل: 25,918 
 b1:'حالة احتيال مكتشفة',b2:'دقة التنبيهات',b3:'تنبيهات خاطئة',
 evl:'حالات الاحتيال المكتشفة (تنبيه واحد على الأقل)',
 tblT:'التنبيهات حسب القاعدة',cr:'القاعدة',cf:'احتيال حقيقي',cx:'تنبيه خاطئ',
-tune:'مثال على الضبط: عندما كان حد المبلغ الكبير 1,500 ريال ظهر 335 تنبيهاً خاطئاً (دقة 30%). عند 3,000 ريال: 78 تنبيهاً خاطئاً (دقة 64%). أخطاء أقل مع اكتشاف نفس الحالات.',
+tune:'مثال على الضبط: عندما كان حد المبلغ الكبير 1,500 ريال ظهر 301 تنبيهاً خاطئاً (دقة 32%). عند 3,000 ريال: 78 تنبيهاً خاطئاً (دقة 64%). أخطاء أقل مع اكتشاف نفس الحالات.',
 ruT:'القواعد الأربع',ruS:'كل قاعدة بسيطة وقابلة للتفسير وتعمل على معاملة واحدة في كل مرة، مثل مهمة Streaming.',
 ru:[['مبلغ كبير','المبلغ أكبر من 8 أضعاف المعتاد للبطاقة وفوق 3,000 ريال.','amount > 8 × median'],['سرعة عالية','5 معاملات أو أكثر على بطاقة واحدة خلال دقيقتين.','count(120s) ≥ 5'],['تغيّر الموقع الجغرافي','معاملتان على البطاقة نفسها في موقعين تبعدان أكثر من 300 كم، بفارق زمني لا يسمح بالانتقال بينهما.','km / hours > 900'],['اختبار البطاقة','3 معاملات صغيرة (≤ 10 ريال) خلال 5 دقائق، أو معاملة كبيرة بعدها مباشرة.','small ≥ 3 → big']],
 lmT:'قيود المشروع',
@@ -207,7 +209,7 @@ let st={n:0,al:0,sar:0,tp:0,fa:0}; const feedItems=[],alertItems=[],pulses=[],ci
 function renderStatic(){
  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.title=lang==='ar'?'رادار احتيال المعاملات المالية':'Transaction Fraud Radar';
  document.querySelectorAll('[data-i]').forEach(e=>{const v=T(e.dataset.i);e.innerHTML=v;});
- document.getElementById('lang').textContent=T('btn');
+ document.getElementById('lang').textContent=T('btn');document.getElementById('anl').href='analysis.html'+(lang==='ar'?'?lang=ar':'');
  document.getElementById('flow').innerHTML=T('n').map(n=>`<div class="node"><b>${n[0]}</b><small>${n[1]}</small><small>${n[2]}</small><span class="chip ${n[3]}">${T('st')[n[3]]}</span></div>`).join('');
  document.getElementById('rules').innerHTML=T('ru').map(r=>`<div class="rule"><b>${r[0]}</b>${r[1]}<code>${r[2]}</code></div>`).join('');
  document.getElementById('lim').innerHTML=T('lm').map(x=>`<li>${x}</li>`).join('');
